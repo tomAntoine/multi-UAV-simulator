@@ -48,20 +48,21 @@ def main():
     pos_goal = [15,15,-15]
     channel_id = 'udp:127.0.0.1:14551'
     quad0 = Quadcopter(Tup = 100, Ts = Ts, quad_id = 0, mode='ennemy', id_targ = -1, pos_goal= pos_goal, pos_obs = pos_obs,channel_id=channel_id)
-    
+
     quads = [quad0]
 
     for quad in quads:
-        
+
         quad.init()
 
     while True :
 
         quad_sim(Ts, quads)
-        
+
         time.sleep(Ts)
 
 
 
 if __name__ == "__main__":
+    print("simulation started")
     main()
