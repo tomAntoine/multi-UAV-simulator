@@ -72,7 +72,7 @@ class Quadcopter:
 
         self.global_frame = vehicle.location.global_relative_frame
 
-        self.pos_ini = vehicle.location.global_relative_frame
+        self.pos_ini = reverse_get_location_metres(self.global_frame, vehicle.location.global_relative_frame)
 
         self.vehicle.groundspeed = gnd_speed
 

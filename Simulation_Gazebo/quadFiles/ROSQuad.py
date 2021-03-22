@@ -162,16 +162,34 @@ def get_location_metres(original_location, dNorth, dEast, altitude):
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
+    newalt = original_location.alt + altitude
     if type(original_location) is LocationGlobal:
-        targetlocation=LocationGlobal(newlat, newlon,original_location.alt+altitude)
+        targetlocation=LocationGlobal(newlat, newlon,newalt)
     elif type(original_location) is LocationGlobalRelative:
-        targetlocation=LocationGlobalRelative(newlat, newlon,original_location.alt+altitude)
+        targetlocation=LocationGlobalRelative(newlat, newlon,newalt)
     else:
         raise Exception("Invalid Location object passed")
         
     return targetlocation;
 
-def get_location_metres()
+def reverse_get_location_metres(original_location, location):
+
+    lat = location.lat
+    lon = location.lon
+    alt = location.alt
+
+    earth_radius = 6378137.0 
+
+    dLat = (lat - original_location.lat)*math.pi/180
+    dLon = (lon - original_location.lon)*math.pi/180
+
+    dNorth = dLat*earth_radius
+    dEast  = dLon*(earth_radius*math.cos(math.pi*original_location.lat/180))
+
+    return(dNorth,dEast,alt)
+
+
+
 
 
 def get_distance_metres(aLocation1, aLocation2):
