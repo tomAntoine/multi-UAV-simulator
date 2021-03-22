@@ -9,15 +9,9 @@ adaptation
 author: Tom Antoine and Alex Martinez
 """
 import numpy as np
-import matplotlib.pyplot as plt
 import time
-import cProfile
-from trajectory import Trajectory
-from ctrl import Control
 from quadFiles.quad import Quadcopter
-from utils.windModel import Wind
 import utils
-import mpl_toolkits.mplot3d.axes3d as p3
 
 def quad_sim(Ts, quads):
 
