@@ -46,7 +46,8 @@ def main():
 
 
     pos_goal = [15,15,-15]
-    quad0 = Quadcopter(Tup = 100, Ts = Ts, quad_id = 0, mode='ennemy', id_targ = -1, pos_goal= pos_goal, pos_obs = pos_obs)
+    channel_id = 'udp:127.0.0.1:14551'
+    quad0 = Quadcopter(Tup = 100, Ts = Ts, quad_id = 0, mode='ennemy', id_targ = -1, pos_goal= pos_goal, pos_obs = pos_obs,channel_id=channel_id)
     
     quads = [quad0]
 
