@@ -18,6 +18,7 @@ def quad_sim(Ts, quads):
     pos_quads = []
 
     for quad in quads:
+        quad.update_states()
         pos_quads.append([quad.quad_id,quad.pos])
 
     for quad in quads:

@@ -69,9 +69,9 @@ class Quadcopter:
 
         self.vehicle = connect(channel_id)
 
-        self.global_frame = vehicle.location.global_relative_frame
+        self.global_frame = self.vehicle.location.global_relative_frame
 
-        self.pos_ini = reverse_get_location_metres(self.global_frame, vehicle.location.global_relative_frame)
+        self.pos_ini = reverse_get_location_metres(self.global_frame, self.vehicle.location.global_relative_frame)
 
         self.vehicle.groundspeed = gnd_speed
 
@@ -94,7 +94,7 @@ class Quadcopter:
         if self.mode == "fall":
 
             self.pos_goal = np.hstack([self.pos[0], self.pos[1], -0.5]).astype(float)
-            ChangeMode(vehicle,"Stabilize")
+            ChangeMode(self.vehicle,"Stabilize")
             self.mode = "neutralized"
 
             self.print_mode("ennemy", "fall")
@@ -147,7 +147,7 @@ class Quadcopter:
                         self.print_mode("guided", "home")
 
                 if self.mode == 'home':
-                    ChangeMode(vehicle,"RTL")
+                    ChangeMode(self.vehicle,"RTL")
 
 
                 if self.mode == 'land':
@@ -164,6 +164,11 @@ class Quadcopter:
                 self.wps, data = pf3d(pos_ini, pos_goal, pos_obs)
                 self.data = data
                 self.updateWaypoints2ROS()
+
+    def update_states(self):
+
+        self.pos = reverse_get_location_metres(self.global_frame, self.vehicle.location.global_relative_frame)
+        self.speed = self.vehicle.velocity()
 
 
     def init(self):
