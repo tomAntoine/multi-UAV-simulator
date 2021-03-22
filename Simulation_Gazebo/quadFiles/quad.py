@@ -73,7 +73,9 @@ class Quadcopter:
 
 
     def updateWaypoints2ROS(self):
-        clear_all_mission(self.vehicle)
+        #clear_all_mission(self.vehicle)
+        N_wps_before, _ = get_current_mission(self.vehicle)
+
         new_wps = self.wps
         print("new wps are : ----------------")
         for i in range(10):
@@ -82,7 +84,11 @@ class Quadcopter:
             wp = get_location_metres(self.global_frame,x,y,z)
             print(x,y,z)
             add_last_waypoint_to_mission(self.vehicle, wp.lat, wp.lon, wp.alt)
+        add_last_waypoint_to_mission(self.vehicle, wp.lat, wp.lon, wp.alt)
+        print(N_wps_before)
+        self.vehicle.commands.next = N_wps_before
         ChangeMode(self.vehicle,"AUTO")
+
 
 
     def update(self, Ts):

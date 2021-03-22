@@ -37,7 +37,7 @@ def arm_and_takeoff(vehicle,altitude):
    while True:
       v_alt = vehicle.location.global_relative_frame.alt
       print(">> Altitude = %.1f m"%v_alt)
-      if v_alt >= altitude - 1.0:
+      if v_alt >= altitude - 0.1:
           print("Target altitude reached")
           break
       time.sleep(1)
@@ -48,7 +48,8 @@ def clear_mission(vehicle):
     """
     cmds = vehicle.commands
     vehicle.commands.clear()
-    vehicle.flush()
+    vehicle.commands.upload()
+
 
     # After clearing the mission you MUST re-download the mission from the vehicle
     # before vehicle.commands can be used again
@@ -109,28 +110,34 @@ def add_last_waypoint_to_mission(                                       #--- Add
     cmds.download()
     cmds.wait_ready()
 
+
     # Save the vehicle commands to a list
     missionlist=[]
+
     for cmd in cmds:
         missionlist.append(cmd)
+
+
 
     # Modify the mission as needed. For example, here we change the
 
 
     #mavutil.mavlink.MAV_FRAME_GLOBAL_TERRAIN_ALT
 
-    wpLastObject = Command( 0, 0, 0, 3, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, 
+    wpLastObject = Command( 0, 0, 0, 3, mavutil.mavlink.MAV_CMD_NAV_SPLINE_WAYPOINT, 0, 0, 0, 0, 0, 0, 
                            wp_Last_Latitude, wp_Last_Longitude, wp_Last_Altitude)
     missionlist.append(wpLastObject)
 
+
     # Clear the current mission (command is sent when we call upload())
+    print('clear')
     cmds.clear()
 
     #Write the modified mission and flush to the vehicle
     for cmd in missionlist:
         cmds.add(cmd)
     cmds.upload()
-    
+
     return (cmds.count)    
 
 def ChangeMode(vehicle, mode):
