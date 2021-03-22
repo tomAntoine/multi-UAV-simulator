@@ -19,7 +19,7 @@ import math
 #-------------- FUNCTIONS  
 #--------------------------------------------------
 #-- Define arm and takeoff
-def arm_and_takeoff(altitude):
+def arm_and_takeoff(vehicle,altitude):
 
    while not vehicle.is_armable:
       print("waiting to be armable")
@@ -135,6 +135,7 @@ def add_last_waypoint_to_mission(                                       #--- Add
 
 def ChangeMode(vehicle, mode):
     while vehicle.mode != VehicleMode(mode):
+            print(mode)
             vehicle.mode = VehicleMode(mode)
             time.sleep(0.5)
     return True
@@ -267,7 +268,7 @@ if __name__ == '__main__':
             #-- Change mode, set the ground speed
             vehicle.groundspeed = gnd_speed
             mode = 'MISSION'
-            print ("Swiitch mode to MISSION")
+            print ("Switch mode to MISSION")
             
         elif mode == 'MISSION':
             #-- Here we just monitor the mission status. Once the mission is completed we go back

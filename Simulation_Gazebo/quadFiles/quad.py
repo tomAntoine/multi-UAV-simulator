@@ -13,11 +13,9 @@ from scipy.integrate import ode
 import utils
 import config
 
-from ctrl import Control
-
 from pf3d import pf3d
 
-from ROSQuad import *
+from quadFiles.ROSQuad import *
 
 deg2rad = pi/180.0
 
@@ -47,22 +45,14 @@ class Quadcopter:
         self.t_track = 0
         self.Tup = Tup
 
-
-        self.wps, data = pf3d(pos_ini, pos_goal, pos_obs)
-        self.data = data
-        self.updateWaypoints2ROS()
-
-
-        self.color = color
-
-
         #-- Setup the commanded flying speed
         self.gnd_speed = 4 # [m/s]
 
-        #-- Connect to the vehicle
-        print('Connecting the drone {1}'.format(self.channel_id))
-
         self.channel_id = channel_id
+
+
+        #-- Connect to the vehicle
+        print('Connecting the drone {0}'.format(self.channel_id))
 
 
         #channel_id = 'udp:127.0.0.1:14551'
@@ -73,7 +63,9 @@ class Quadcopter:
 
         self.pos_ini = reverse_get_location_metres(self.global_frame, self.vehicle.location.global_relative_frame)
 
-        self.vehicle.groundspeed = gnd_speed
+        self.vehicle.groundspeed = self.gnd_speed
+
+
 
 
     def print_mode(self, mode_prev, mode_new):
@@ -83,13 +75,19 @@ class Quadcopter:
     def updateWaypoints2ROS(self):
         clear_all_mission(self.vehicle)
         new_wps = self.wps
-        for wp in new_wps :
-            x, y, z = wp[0], wp[1], wp[2]
+        print("new wps are : ----------------")
+        for i in range(10):
+            wp = new_wps[i+1]
+            x, y, z = wp[0], wp[1], -wp[2]
             wp = get_location_metres(self.global_frame,x,y,z)
+            print(x,y,z)
             add_last_waypoint_to_mission(self.vehicle, wp.lat, wp.lon, wp.alt)
+        ChangeMode(self.vehicle,"AUTO")
 
 
     def update(self, Ts):
+
+        self.update_states()
 
         if self.mode == "fall":
 
@@ -105,7 +103,6 @@ class Quadcopter:
             if self.mode == 'takeoff':
                 arm_and_takeoff(3)
                 self.mode = 'track'
-
 
                 if self.mode == 'track':
                     pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.id_targ and x[0] != self.quad_id)]
@@ -140,7 +137,11 @@ class Quadcopter:
 
                 if self.mode == 'guided':
                     pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
-                    temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                    try :
+                        temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                    except :
+                        temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
+
                     dist = np.sqrt((self.pos[0]-self.pos_goal[0])**2+(self.pos[1]-self.pos_goal[1])**2+(self.pos[2]-self.pos_goal[2])**2)
                     if dist < 1:
                         self.mode = "home"
@@ -152,25 +153,43 @@ class Quadcopter:
 
                 if self.mode == 'land':
                     pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
-                    temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                    try :
+                        temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                    except :
+                        temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
                     self.pos_goal = np.hstack([self.pos[0], self.pos[1], -0.5]).astype(float)
 
                 if self.mode == 'hover':
-                    pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
+                    try :
+                        temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                    except :
+                        temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
                     temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
                     self.pos_goal = np.hstack(self.pos).astype(float)
 
 
-                self.wps, data = pf3d(pos_ini, pos_goal, pos_obs)
-                self.data = data
-                self.updateWaypoints2ROS()
+        self.wps, data = pf3d(self.pos, self.pos_goal, self.pos_obs)
+        self.data = data
+        self.updateWaypoints2ROS()
 
     def update_states(self):
 
         self.pos = reverse_get_location_metres(self.global_frame, self.vehicle.location.global_relative_frame)
-        self.speed = self.vehicle.velocity()
+        
+        self.speed = self.vehicle.velocity
+
+        print(self.pos)
+        print(self.speed)
 
 
     def init(self):
 
-        self.updateWaypoints2ROS()
+        arm_and_takeoff(self.vehicle,3)
+        self.update_states()
+        self.wps = self.pos
+        clear_all_mission(self.vehicle)
+        x, y, z = self.wps[0], self.wps[1], self.wps[2]
+        wp = get_location_metres(self.global_frame,x,y,z)
+        print(wp)
+        add_last_waypoint_to_mission(self.vehicle, wp.lat, wp.lon, wp.alt)
+        ChangeMode(self.vehicle,"AUTO")

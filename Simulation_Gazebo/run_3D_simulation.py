@@ -39,15 +39,14 @@ def quad_sim(Ts, quads):
 
 def main():
 
-    Ts = 0.005
+    Ts = 15
 
     # ---------------------------
-    pos_obs = np.array([[1, 5, -2], [8, 2, -8], [5, 8, -9], [0, 0, -2], [3, 3, -1],[3, 9, -17],[5, 7, -18],[0, 0, -10],[5, 10, -16],[10,10,-12],[13,13,-13]])
-
+    pos_obs = np.array([[1, 5, -2]])
 
     pos_goal = [15,15,-15]
     channel_id = 'udp:127.0.0.1:14551'
-    quad0 = Quadcopter(Tup = 100, Ts = Ts, quad_id = 0, mode='ennemy', id_targ = -1, pos_goal= pos_goal, pos_obs = pos_obs,channel_id=channel_id)
+    quad0 = Quadcopter(Tup = 100, Ts = Ts, quad_id = 0, mode='ennemy', id_targ = -1, pos_goal= pos_goal, pos_obs = pos_obs, channel_id=channel_id)
     
     quads = [quad0]
 
