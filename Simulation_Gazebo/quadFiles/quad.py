@@ -192,10 +192,6 @@ class Quadcopter:
 
         arm_and_takeoff(self.vehicle,3)
         self.update_states()
-        self.wps = self.pos
-        clear_all_mission(self.vehicle)
-        x, y, z = self.wps[0], self.wps[1], self.wps[2]
-        wp = get_location_metres(self.global_frame,x,y,z)
-        print(wp)
-        add_last_waypoint_to_mission(self.vehicle, wp.lat, wp.lon, wp.alt)
+        self.wps = [self.pos]
+        adds_new_mission(vehicle,self.global_frame,self.wps)
         ChangeMode(self.vehicle,"AUTO")

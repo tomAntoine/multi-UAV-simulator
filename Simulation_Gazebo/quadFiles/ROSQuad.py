@@ -59,10 +59,8 @@ def clear_mission(vehicle):
     cmds.wait_ready()
 
 def clear_all_mission(vehicle):
-    n_WP, _ = get_current_mission(vehicle)
+    vehicle.commands.clear() 
 
-    for i in range(n_WP):
-        clear_mission(vehicle)
 
 
 
@@ -130,7 +128,6 @@ def add_last_waypoint_to_mission(                                       #--- Add
 
 
     # Clear the current mission (command is sent when we call upload())
-    print('clear')
     cmds.clear()
 
     #Write the modified mission and flush to the vehicle
@@ -211,6 +208,164 @@ def get_distance_metres(aLocation1, aLocation2):
     dlat = aLocation2.lat - aLocation1.lat
     dlong = aLocation2.lon - aLocation1.lon
     return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
+
+
+
+def distance_to_current_waypoint(vehicle):
+    """
+    Gets distance in metres to the current waypoint. 
+    It returns None for the first waypoint (Home location).
+    """
+    nextwaypoint = vehicle.commands.next
+    if nextwaypoint==0:
+        return None
+    missionitem=vehicle.commands[nextwaypoint-1] #commands are zero indexed
+    lat = missionitem.x
+    lon = missionitem.y
+    alt = missionitem.z
+    targetWaypointLocation = LocationGlobalRelative(lat,lon,alt)
+    distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
+    return distancetopoint
+
+
+
+def adds_new_mission(vehicle, global_frame, wps_in_meter):
+    """
+    Adds a takeoff command and waypoints commands to the current mission.
+    The function assumes vehicle.commands matches the vehicle mission state 
+    (you must have called download at least once in the session and after clearing the mission)
+    """ 
+
+    cmds = vehicle.commands
+
+    print(" Clear any existing commands")
+    cmds.clear() 
+    
+    print(" Define/add new commands.")
+    # Add new commands. The meaning/order of the parameters is documented in the Command class. 
+     
+    #Add MAV_CMD_NAV_TAKEOFF command. This is ignored if the vehicle is already in the air.
+    cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, 10))
+
+    #Define the four MAV_CMD_NAV_WAYPOINT locations and add the commands
+    points = []
+    for wp in wps_in_meter:
+        x = wp[0]
+        y = wp[1]
+        z = wp[2]
+        point = get_location_metres(global_frame, x, y, z)
+        points.append(point)
+
+    for point in points :
+        cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point.lat, point.lon, point.alt))
+    #add dummy last waypoint
+    last_point = points[-1]
+    cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, last_point.lat, last_point.lon, last_point.alt))    
+
+    print(" Upload new commands to vehicle")
+    cmds.upload()
+
+    # reset the command counter to 0 so the drone fly to the 1st waypoint and not to another one
+    vehicle.commands.next = 0
+
+    # download the mission 
+    # !!!!!!!!!!!!!!!!!!!!
+    # NOT SURE IF IT IS USEFULL, MIGHT BE COMMENTED
+    download_mission(vehicle)
+  
+
+
+
+
+
+
+
+
+
+
+def get_location_metres(original_location, x, y, altitude):
+    """
+    Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
+    specified `original_location`. The returned LocationGlobal has the same `alt` value
+    as `original_location`.
+
+    The function is useful when you want to move the vehicle around specifying locations relative to 
+    the current vehicle position.
+
+    The algorithm is relatively accurate over small distances (10m within 1km) except close to the poles.
+
+    For more information see:
+    http://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
+    """
+    earth_radius = 6378137.0 #Radius of "spherical" earth
+    #Coordinate offsets in radians
+    '''
+    dLat = dNorth/earth_radius
+    dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
+    '''
+    z = altitude
+    dLat = math.asin(z/earth_radius)
+    dLong = math.atan2(y,x) 
+
+    #New position in decimal degrees
+    newlat = original_location.lat + (dLat * 180/math.pi)
+    newlon = original_location.lon + (dLon * 180/math.pi)
+    newalt = original_location.alt + altitude
+    if type(original_location) is LocationGlobal:
+        targetlocation=LocationGlobal(newlat, newlon,newalt)
+    elif type(original_location) is LocationGlobalRelative:
+        targetlocation=LocationGlobalRelative(newlat, newlon,newalt)
+    else:
+        raise Exception("Invalid Location object passed")
+        
+    return targetlocation;
+
+def reverse_get_location_metres(original_location, location):
+
+    lat = location.lat
+    lon = location.lon
+    alt = location.alt
+
+    earth_radius = 6378137.0 
+
+    dLat = (lat - original_location.lat)*math.pi/180
+    dLon = (lon - original_location.lon)*math.pi/180
+    '''
+    dNorth = dLat*earth_radius
+    dEast  = dLon*(earth_radius*math.cos(math.pi*original_location.lat/180))
+
+    '''
+    x = R*math.cos(dLat)*math.cos(dLong)
+    y = R*math.cos(dLat)*math.sin(dLong)
+    z = R*math.sin(dLat)
+
+    return(x,y,z)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
