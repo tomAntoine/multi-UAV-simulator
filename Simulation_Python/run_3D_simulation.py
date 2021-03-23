@@ -52,7 +52,7 @@ def main():
     # ---------------------------
     Ti = 0
     Ts = 0.005
-    Tf = 3
+    Tf = 20
     ifsave = 1
 
     # Choose trajectory settings
@@ -93,12 +93,12 @@ def main():
     quad1 = Quadcopter(Ti, Ts*90, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 0, color = 'green', pos_ini = pos_ini, pos_goal = pos_goal, pos_obs = pos_obs)
     pos_ini = [0,0,0]
     pos_goal = [5,10,-10]
-    quad2 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2,  mode='track', id_targ = 1, color = 'pink', pos_ini = pos_ini, pos_goal = pos_goal, pos_obs = pos_obs)
+    quad2 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2,  mode='track', id_targ = 0, color = 'pink', pos_ini = pos_ini, pos_goal = pos_goal, pos_obs = pos_obs)
     pos_ini = [10,10,-10]
     pos_goal = [5,10,-10]
-    quad3 = Quadcopter(Ti, Ts*110, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3,  mode='guided', id_targ = -1, color = 'black', pos_ini = pos_ini, pos_goal = pos_goal, pos_obs = pos_obs)
+    #quad3 = Quadcopter(Ti, Ts*110, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3,  mode='guided', id_targ = -1, color = 'black', pos_ini = pos_ini, pos_goal = pos_goal, pos_obs = pos_obs)
 
-    quads = [quad0, quad1, quad2, quad3] #, quad4]
+    quads = [quad0, quad1, quad2]#, quad3] #, quad4]
 
     wind = Wind('None', 2.0, 90, -15)
 
@@ -158,9 +158,9 @@ def main():
     #utils.makeAllFigures(data, pos_obs)
     #utils.make3DAnimation(data,pos_obs)
 
-    
+
     fig = plt.figure(figsize = (10,10))
-    
+
     ax = p3.Axes3D(fig)
 
     anis = []
@@ -179,8 +179,8 @@ def main():
         sentence = 'Quad ID: {}, MODE: {}'.format(quad.quad_id,quad.mode_ini)
     ax.legend(sentence)
     '''
-    
-    
+
+
 
     '''
     # Plot pf3D potential
