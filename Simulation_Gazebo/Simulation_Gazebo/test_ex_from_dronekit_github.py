@@ -34,7 +34,7 @@ print('Connecting the drone {0}'.format(channel_id))
 
 vehicle = connect(channel_id)
 
-
+spline = True
 def get_location_metres(original_location, dNorth, dEast):
     """
     Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
@@ -169,9 +169,9 @@ def arm_and_takeoff(aTargetAltitude):
 print('Create a new mission (for current location)')
 
 
-wps = [[0,10,10],[20,10,10],[10,-20,20]]
+wps = [[0,0,10],[0,20,10],[20,20,10],[20,0,10], [0,0,10]]
 
-adds_new_mission(vehicle, vehicle.location.global_frame,wps)
+adds_new_mission(vehicle, vehicle.location.global_frame,wps, spline)
 
 
 # From Copter 3.3 you will be able to take off using a mission item. Plane must take off using a mission item (currently).
@@ -193,11 +193,12 @@ vehicle.mode = VehicleMode("AUTO")
 while True:
     nextwaypoint=vehicle.commands.next
     print('Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint()))
-  
+    '''
     if nextwaypoint==3: #Skip to next waypoint
         print('Skipping to Waypoint 5 when reach waypoint 3')
         vehicle.commands.next = 5
-    if nextwaypoint==5: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
+    '''
+    if nextwaypoint==6: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
         print("Exit 'standard' mission when start heading to final waypoint (5)")
         break;
     time.sleep(1)

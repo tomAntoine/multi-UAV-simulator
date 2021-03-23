@@ -229,12 +229,17 @@ def distance_to_current_waypoint(vehicle):
 
 
 
-def adds_new_mission(vehicle, global_frame, wps_in_meter):
+def adds_new_mission(vehicle, global_frame, wps_in_meter, spline = False):
     """
     Adds a takeoff command and waypoints commands to the current mission.
     The function assumes vehicle.commands matches the vehicle mission state 
     (you must have called download at least once in the session and after clearing the mission)
     """ 
+    if spline:
+        trajType = mavutil.mavlink.MAV_CMD_NAV_SPLINE_WAYPOINT
+    else:
+        trajType = mavutil.mavlink.MAV_CMD_NAV_WAYPOINT
+
 
     cmds = vehicle.commands
 
@@ -245,7 +250,7 @@ def adds_new_mission(vehicle, global_frame, wps_in_meter):
     # Add new commands. The meaning/order of the parameters is documented in the Command class. 
      
     #Add MAV_CMD_NAV_TAKEOFF command. This is ignored if the vehicle is already in the air.
-    cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, 10))
+    cmds.add(Command( 0, 0, 0, 3, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, 10))
 
     #Define the four MAV_CMD_NAV_WAYPOINT locations and add the commands
     points = []
@@ -257,10 +262,10 @@ def adds_new_mission(vehicle, global_frame, wps_in_meter):
         points.append(point)
 
     for point in points :
-        cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point.lat, point.lon, point.alt))
+        cmds.add(Command( 0, 0, 0, 3, trajType, 0, 0, 0, 0, 0, 0, point.lat, point.lon, point.alt-global_frame.alt))
     #add dummy last waypoint
     last_point = points[-1]
-    cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, last_point.lat, last_point.lon, last_point.alt))    
+    cmds.add(Command( 0, 0, 0, 3, trajType, 0, 0, 0, 0, 0, 0, last_point.lat, last_point.lon, last_point.alt-global_frame.alt))    
 
     print(" Upload new commands to vehicle")
     cmds.upload()
@@ -274,72 +279,6 @@ def adds_new_mission(vehicle, global_frame, wps_in_meter):
     download_mission(vehicle)
   
 
-
-
-
-
-
-
-
-
-
-def get_location_metres(original_location, x, y, altitude):
-    """
-    Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
-    specified `original_location`. The returned LocationGlobal has the same `alt` value
-    as `original_location`.
-
-    The function is useful when you want to move the vehicle around specifying locations relative to 
-    the current vehicle position.
-
-    The algorithm is relatively accurate over small distances (10m within 1km) except close to the poles.
-
-    For more information see:
-    http://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
-    """
-    earth_radius = 6378137.0 #Radius of "spherical" earth
-    #Coordinate offsets in radians
-    '''
-    dLat = dNorth/earth_radius
-    dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
-    '''
-    z = altitude
-    dLat = math.asin(z/earth_radius)
-    dLong = math.atan2(y,x) 
-
-    #New position in decimal degrees
-    newlat = original_location.lat + (dLat * 180/math.pi)
-    newlon = original_location.lon + (dLon * 180/math.pi)
-    newalt = original_location.alt + altitude
-    if type(original_location) is LocationGlobal:
-        targetlocation=LocationGlobal(newlat, newlon,newalt)
-    elif type(original_location) is LocationGlobalRelative:
-        targetlocation=LocationGlobalRelative(newlat, newlon,newalt)
-    else:
-        raise Exception("Invalid Location object passed")
-        
-    return targetlocation;
-
-def reverse_get_location_metres(original_location, location):
-
-    lat = location.lat
-    lon = location.lon
-    alt = location.alt
-
-    earth_radius = 6378137.0 
-
-    dLat = (lat - original_location.lat)*math.pi/180
-    dLon = (lon - original_location.lon)*math.pi/180
-    '''
-    dNorth = dLat*earth_radius
-    dEast  = dLon*(earth_radius*math.cos(math.pi*original_location.lat/180))
-
-    '''
-    x = R*math.cos(dLat)*math.cos(dLong)
-    y = R*math.cos(dLat)*math.sin(dLong)
-    z = R*math.sin(dLat)
-
-    return(x,y,z)
 
 
 
