@@ -20,6 +20,7 @@ import utils
 import config
 import mpl_toolkits.mplot3d.axes3d as p3
 from matplotlib.legend import Legend
+import random
 
 def quad_sim(t, Ts, quads, wind, i):
 
@@ -52,8 +53,8 @@ def main():
     # ---------------------------
     Ti = 0
     Ts = 0.005
-    Tf = 15
-    ifsave = 0
+    Tf = 12
+    ifsave = 1
 
     # Choose trajectory settings
     # ---------------------------
@@ -90,14 +91,67 @@ def main():
         quads = [quad0, quad1, quad2]
         return pos_obs,quads
 
-    def dynamic_avoidance_scenario():
+    def multi_waypoint_scenario():
         pos_obs = np.array([[50,0,0]])
-        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = [0,14,-5], pos_goal= [0,-20,-5], pos_obs = pos_obs)
-        quad1 = Quadcopter(Ti, Ts*90, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='guided', id_targ = -1, color = 'green', pos_ini = [20,0,-5], pos_goal = [-20,0,-5], pos_obs = pos_obs)
+        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = [0,0,0], pos_goal= [0,-17,-10], pos_obs = pos_obs)
+        quad1 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='ennemy', id_targ = -1, color = 'green', pos_ini = [20,0,0], pos_goal = [-20,-15,-10], pos_obs = pos_obs)
+        quad2 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2, mode='ennemy', id_targ = -1, color = 'red', pos_ini = [-20,-10,0], pos_goal = [-10,0,-20], pos_obs = pos_obs)
+        quads = [quad0, quad1, quad2]
+        return pos_obs,quads
+
+    def static_OA_scenario():
+        pos_obs = []
+        for i in range(30):
+            pos_obs.append(random.sample(range(-10, 0), 3))
+        pos_obs = np.array(pos_obs)
+        print(pos_obs)
+        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = [0,0,0], pos_goal= [-10,-10,-10], pos_obs = pos_obs)
+        quads = [quad0]
+        return pos_obs,quads
+
+    def dynamic_CA_scenario():
+        #Tf =8s
+        pos_obs = np.array([[50,0,0]])
+        quad0 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='guided', id_targ = -1, color = 'blue',  pos_ini = [0,10,-5],pos_goal = [30,10,-5], pos_obs = pos_obs)
+        quad1 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='ennemy', id_targ = -1, color = 'green', pos_ini = [3,0,-5], pos_goal = [3,20,-5], pos_obs = pos_obs)
+        quad2 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2, mode='ennemy', id_targ = -1, color = 'green', pos_ini = [8,0,-5], pos_goal = [8,20,-5], pos_obs = pos_obs)
+        quad3 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3, mode='ennemy', id_targ = -1, color = 'green', pos_ini = [15,0,-5], pos_goal = [15,20,-5], pos_obs = pos_obs)
+        quads = [quad0, quad1,quad2,quad3]
+        return pos_obs,quads
+
+    def simple_tracking_scenario():
+        pos_obs = np.array([[-10,-10,0]])
+        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue',  pos_ini = [0,0,0],  pos_goal = [15,15,-15],  pos_obs = pos_obs)
+        quad1 = Quadcopter(Ti, Ts*90, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 0, color = 'green', pos_ini = [5,5,0], pos_goal = [2,2,-10],  pos_obs = pos_obs)
         quads = [quad0, quad1]
         return pos_obs,quads
 
-    pos_obs,quads = dynamic_avoidance_scenario()
+    def multi_tracking_scenario():
+        pos_obs = np.array([[-10,-10,0]])
+        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue',  pos_ini = [0,0,0],  pos_goal = [15,15,-15],  pos_obs = pos_obs)
+        quad1 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 0, color = 'green', pos_ini = [4,0,0], pos_goal = [4,4,-10],  pos_obs = pos_obs)
+        quad2 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2, mode='track', id_targ = 0, color = 'green', pos_ini = [4,4,0], pos_goal = [4,4,-10],  pos_obs = pos_obs)
+        quad3 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3, mode='track', id_targ = 0, color = 'green', pos_ini = [4,-4,0], pos_goal = [4,4,-10],  pos_obs = pos_obs)
+        quads = [quad0, quad1, quad2, quad3]
+        return pos_obs,quads
+
+    def tracking_loop_scenario(x):
+        pos_obs = np.array([[x/2,x/2,-10]])
+        quad0 = Quadcopter(Ti, Ts*99, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='track', id_targ = 1, color = 'blue',  pos_ini = [0,0,-10],  pos_goal = [0,x,-10],  pos_obs = pos_obs)
+        quad1 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 2, color = 'green', pos_ini = [x,0,-10], pos_goal = [0,0,-10],  pos_obs = pos_obs)
+        quad2 = Quadcopter(Ti, Ts*101, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2, mode='track', id_targ = 3, color = 'orange', pos_ini = [x,x,-10],pos_goal = [x,0,-10], pos_obs = pos_obs)
+        quad3 = Quadcopter(Ti, Ts*102, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3, mode='track', id_targ = 0, color = 'pink', pos_ini = [0,x,-10], pos_goal = [x,x,-10],pos_obs = pos_obs)
+        quads = [quad0, quad1,quad2,quad3]
+        return pos_obs,quads
+
+    def tracking_and_kill_scenario():
+        pos_obs = np.array([[-10,-10,0]])
+        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue',  pos_ini = [0,0,-5],  pos_goal = [20,15,-20],  pos_obs = pos_obs)
+        quad1 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 0, color = 'green', pos_ini = [5,0,0], pos_goal = [4,4,-10],  pos_obs = pos_obs)
+        quads = [quad0, quad1]
+        return pos_obs,quads
+
+    pos_obs,quads = tracking_and_kill_scenario()
 
 
     wind = Wind('None', 2.0, 90, -15)

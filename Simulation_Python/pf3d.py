@@ -99,8 +99,8 @@ def calc_repulsive_potential(x, y, z, ox, oy, oz, rr):
 
 def get_motion_model():
     # dx, dy, dz
-    a = 1 #np.sqrt(3)/3
-    b = 1 #np.sqrt(2)/2
+    a = 1#np.sqrt(3)/3
+    b = 1#np.sqrt(2)/2
     motion = [[1, 0, 0],
             [-1, 0, 0],
             [0, 1, 0],

@@ -16,12 +16,23 @@ from matplotlib.legend import Legend
 import utils
 import config
 
+import matplotlib.lines as mlines
+
 numFrames = 8
 
 def sameAxisAnimation(t_all, Ts, data, ifsave, ax, fig, pos_obs):
     obstacles = ax.plot(pos_obs[:,0], pos_obs[:,1], -pos_obs[:,2],'ro')
-    leg = Legend(ax, obstacles, ['Obstacles'], loc='upper right', fancybox=True, fontsize = 16)
-    ax.add_artist(leg)
+    #leg = Legend(ax, obstacles, ['Obstacles'], loc='upper right', fancybox=True, fontsize = 16)
+    #ax.add_artist(leg)
+
+    obs_leg = mlines.Line2D([], [], color='red', marker='o',markersize=10, label='Obstacles',linestyle='None')
+    ini_leg = mlines.Line2D([], [], color='black', marker='s',markersize=10, label='Initial Position',linestyle='None')
+    goal_leg = mlines.Line2D([], [], color='black', marker='X',markersize=10, label='Goal Position',linestyle='None')
+
+    #leg = Legend(ax, handles=[obs_leg, ini_leg, goal_leg], labels = ['Obstacles','Initial Position','Goal Position'],loc='upper right', fancybox=True, fontsize = 12)
+    ax.legend(handles=[obs_leg, ini_leg, goal_leg], labels = ['Obstacles','Initial Position','Goal Position'],loc='upper right', fancybox=True, fontsize = 12)
+    #ax.add_artist(leg)
+
 
     lines1 = []
     lines2 = []
@@ -56,13 +67,13 @@ def sameAxisAnimation(t_all, Ts, data, ifsave, ax, fig, pos_obs):
             sentence_agts.append(sentence)
 
     try:
-        legend_agts = Legend(ax, pos_ini_agts, sentence_agts, loc='lower left', frameon=False, fancybox=True, fontsize = 12)
+        legend_agts = Legend(ax, pos_ini_agts, sentence_agts, loc='lower left', fancybox=True, fontsize = 12)
         ax.add_artist(legend_agts)
     except:
         print('No agents quads')
 
     try:
-        legend_targs = Legend(ax, pos_ini_targs, sentence_targs, loc='lower right', frameon=False, fancybox=True, fontsize = 12 )
+        legend_targs = Legend(ax, pos_ini_targs, sentence_targs, loc='lower right', fancybox=True, fontsize = 12 )
         ax.add_artist(legend_targs)
     except:
         print('No target quads')
@@ -181,11 +192,12 @@ def sameAxisAnimation(t_all, Ts, data, ifsave, ax, fig, pos_obs):
     # Creating the Animation object
     line_ani = animation.FuncAnimation(fig, updateLines, init_func=ini_plot, frames=len(t_all[0:-2:numFrames]), interval=(Ts*1000*numFrames), blit=False)
 
+    plt.show()
     if (ifsave):
-        #line_ani.save('Gifs/Raw/lines.gif', dpi=80, writer='imagemagick', fps=25)
-        Writer = animation.writers['ffmpeg']
-        writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-        line_ani.save('lines.mp4', writer=writer)
+        line_ani.save('Gifs/Raw/lines.gif', dpi=80, writer='imagemagick', fps=25)
+        #Writer = animation.writers['ffmpeg']
+        #writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+        #line_ani.save('/Gifs/lines.mp4', writer=writer)
 
     #plt.show()
     return line_ani

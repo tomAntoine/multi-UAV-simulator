@@ -78,6 +78,7 @@ class Quadcopter:
         self.acc = np.zeros(3)
 
         self.previous_pos_targ = self.pos
+        self.previous_pos_us = self.pos
 
         self.extended_state()
         self.forces()
@@ -319,13 +320,11 @@ class Quadcopter:
                 # otherwise moddif wp but stab issues
                 # ask SA if they can provide us the velocity of the targets, better than discretize estimation
 
+                estimate_pos_targ = 2*pos_targ-1*self.previous_pos_targ
+                self.pos_goal = np.hstack((estimate_pos_targ) + [0,0,1.5]).astype(float)
 
-
-                estimate_pos_targ = 2*pos_targ-self.previous_pos_targ
-
-
-                self.pos_goal = np.hstack((estimate_pos_targ) + [0,0,-0.5]).astype(float)
-                dist = np.sqrt((self.pos[0]-self.pos_goal[0])**2+(self.pos[1]-self.pos_goal[1])**2+(self.pos[2]-self.pos_goal[2])**2)
+                dist = np.sqrt((self.previous_pos_us[0]-self.previous_pos_targ[0])**2+(self.previous_pos_us[1]-self.previous_pos_targ[1])**2+(self.previous_pos_us[2]-self.previous_pos_targ[2])**2)
+                print(dist)
                 if dist < 1:
                     self.t_track += Ts
                     if self.t_track > 3*Ts:
@@ -335,7 +334,7 @@ class Quadcopter:
                 else :
                     self.t_track = 0
                 self.previous_pos_targ = pos_targ
-
+                self.previous_pos_us = self.pos
 
             if self.mode == 'guided':
                 pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
@@ -354,7 +353,6 @@ class Quadcopter:
                     self.mode = "land"
                     self.print_mode("home", "land")
 
-
             if self.mode == 'land':
                 pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
                 temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
@@ -365,11 +363,8 @@ class Quadcopter:
                 temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
                 self.pos_goal = np.hstack(self.pos).astype(float)
 
-
             self.traj = Trajectory(self.psi, self.ctrlType, self.trajSelect, pos_ini=self.pos, pos_goal=self.pos_goal, pos_obs = temp_pos_obs, Tf = self.Tf, t_ini = t)
             self.ctrl = Control(self.params["w_hover"], self.traj.yawType)
-
-
 
         prev_vel   = self.vel
         prev_omega = self.omega
