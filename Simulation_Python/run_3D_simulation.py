@@ -52,8 +52,8 @@ def main():
     # ---------------------------
     Ti = 0
     Ts = 0.005
-    Tf = 20
-    ifsave = 1
+    Tf = 15
+    ifsave = 0
 
     # Choose trajectory settings
     # ---------------------------
@@ -81,26 +81,27 @@ def main():
     numTimeStep = int(Tf/Ts+1)
 
     # ---------------------------
-    pos_obs = np.array([[1, 5, -2], [8, 2, -8], [5, 8, -9], [0, 0, -2], [3, 3, -1],[3, 9, -17],[5, 7, -18],[0, 0, -10],[5, 10, -16],[10,10,-12],[13,13,-13]])
+    
+    def full_scenario():
+        pos_obs = np.array([[1, 5, -2], [8, 2, -8], [5, 8, -9], [0, 0, -2], [3, 3, -1],[3, 9, -17],[5, 7, -18],[0, 0, -10],[5, 10, -16],[10,10,-12],[13,13,-13]])
+        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = [0,0,0], pos_goal= [15,15,-15], pos_obs = pos_obs)
+        quad1 = Quadcopter(Ti, Ts*90, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='guided', id_targ = -1, color = 'green', pos_ini = [0,3,0], pos_goal = [15,10,-15], pos_obs = pos_obs)
+        quad2 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2,  mode='track', id_targ = 0, color = 'pink', pos_ini = [3,0,0], pos_goal = [15,20,-15], pos_obs = pos_obs)
+        quads = [quad0, quad1, quad2]
+        return pos_obs,quads
 
-    trajSelect[0] = 3
-    pos_ini = [0,0,-3]
-    pos_goal = [15,15,-15]
-    quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = pos_ini, pos_goal= pos_goal, pos_obs = pos_obs)
-    pos_ini = [2,2,-3]
-    pos_goal = [6, 10, -6]
-    trajSelect[2] = 1
-    quad1 = Quadcopter(Ti, Ts*90, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 0, color = 'green', pos_ini = pos_ini, pos_goal = pos_goal, pos_obs = pos_obs)
-    pos_ini = [0,0,0]
-    pos_goal = [5,10,-10]
-    quad2 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2,  mode='track', id_targ = 0, color = 'pink', pos_ini = pos_ini, pos_goal = pos_goal, pos_obs = pos_obs)
-    pos_ini = [10,10,-10]
-    pos_goal = [5,10,-10]
-    #quad3 = Quadcopter(Ti, Ts*110, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3,  mode='guided', id_targ = -1, color = 'black', pos_ini = pos_ini, pos_goal = pos_goal, pos_obs = pos_obs)
+    def dynamic_avoidance_scenario():
+        pos_obs = np.array([[50,0,0]])
+        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = [0,14,-5], pos_goal= [0,-20,-5], pos_obs = pos_obs)
+        quad1 = Quadcopter(Ti, Ts*90, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='guided', id_targ = -1, color = 'green', pos_ini = [20,0,-5], pos_goal = [-20,0,-5], pos_obs = pos_obs)
+        quads = [quad0, quad1]
+        return pos_obs,quads
 
-    quads = [quad0, quad1, quad2]#, quad3] #, quad4]
+    pos_obs,quads = dynamic_avoidance_scenario()
+
 
     wind = Wind('None', 2.0, 90, -15)
+
 
 
     for quad in quads:
@@ -155,7 +156,7 @@ def main():
 
 
 
-    #utils.makeAllFigures(data, pos_obs)
+    utils.makeAllFigures(data, pos_obs)
     #utils.make3DAnimation(data,pos_obs)
 
 
