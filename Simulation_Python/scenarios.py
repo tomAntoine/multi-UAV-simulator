@@ -23,6 +23,65 @@ from matplotlib.legend import Legend
 import random
 
 
+"""
+The variable “quad_id” is provided as an integer from 0 to the number of drones
+in the simulation.
+
+The “mode” is provided as a string and it can be split into three categories,
+depending whether or not they are associated with the agent, the target or both.
+The latter are simple actions such as “takeoff”, “home”, “land”, “fall” or
+“charging”. Then, there are specific modes for agents like “guided” or “track”;
+and targets like “enemy”. The change of mode can be pre-defined or provided
+by the Mission planning and Task control subsystem. In the case of targets, the
+transition is automated internally. They will be initialized in “enemy” mode and
+changed into “neutralized” if the conditions are met to finally change into “fall”.
+In the case of agents, the change of modes is performed externally after system
+integration. However, due to the very intuitive transitions, some of them were
+predefined in sequences for the subsystem validation and verification. For this
+reason, “takeoff” and “land” mode were integrated at the beginning and end of
+each mission. Similarly, after an agent in “track” mode neutralized its target, or
+a “guided” one has reached its goal position, the mode was switched to “home”.
+The “id_targ” is a specific integer input associated to the mode “track”. It
+corresponds to the target identification number and is assigned as -1 by default
+if any other mode is employed.
+
+The “pos_goal” is a set of coordinates x, y and z in the global reference frame
+that represent the goal position. It should be noted that although x and y are
+not bounded, the z coordinate is restricted so that the drones cannot go through
+the ground and by consistency with the guidance algorithms, it is defined as
+negative. It should be noted that although this is an input from Mission planning
+and Task control subsystem it will be updated for specific modes such as
+“track”.
+
+The “pos_obs” is a list of sets of coordinates x, y and z in the global reference
+frame corresponding to the static obstacles and therefore should be kept
+constant for all the drones in the simulation environment. This information is
+predefined but will need to be provided by the Situation Awareness subsystem.
+
+The “pos_ini” is a set of coordinates x, y and z in the global reference frame
+that represent the initial position. It should be noted that as for the rest of
+coordinates, the z coordinate is defined as negative.
+
+The “color” is employed for the easy identification of the drones. It allows to
+easily verify the correct functioning of the algorithms.
+
+The “ctrlType” xyz_pos by default.
+
+The “trajSelect” minimum velocity, no yaw control, average speedby default.
+
+The “Ti” input is given as a number and indicates the initial time for the
+simulation. It is common for all drones and by default set at 0s.
+
+For most modes, the “Tf” input is given as a number and corresponds to the
+final time of the simulation “Tf”. It is therefore employed for creating the
+trajectories to reach goal position. However, in modes that require regular
+updates as “track” or “guided”, it is substituted by the update time. In these
+cases, it should be slightly modified within drones. It is usually around 0.5s.
+
+The numerical time step “numTimeStep” is employed for the trajectories.
+
+"""
+
 
 
 def full_scenario(Ti,Ts,Tf,ctrlType,trajSelect,numTimeStep):

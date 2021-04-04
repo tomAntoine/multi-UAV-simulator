@@ -25,6 +25,14 @@ from scenarios import *
 
 
 def quad_sim(t, Ts, quads, wind, i):
+    """
+    this function update the states of the drones
+    it is composed of to loops
+    the first one collect the position of every drones in a list nammed pos_quads
+    then, in the second loop, this list is provided to every drone, 
+    and their states are updated regarding the positions of others, to their tasks, trajectories, to the time, etc
+    """
+
 
     pos_quads = []
     for quad in quads:
@@ -48,8 +56,20 @@ def quad_sim(t, Ts, quads, wind, i):
 
 
 def main():
+    """
+    this main function is exectued each time the file is executed
+    it first define the quads and the obstacles in the simulation,
+    then it compute the simulation at any time
+    finally, plots and results are returned, with a possibility of saving the results
+    the data dictionary is created to store all the usefull data from the simulation
+    """
+
     start_time = time.time()
     
+
+    # the desired scenario should be selected regarding the file scenarios.py
+    # it is also possible to define position of obstacles and the drones here
+
     pos_obs,quads = static_OA_scenario(Ti,Ts,Tf,ctrlType,trajSelect,numTimeStep)
 
     wind = Wind('None', 2.0, 90, -15)
@@ -62,6 +82,11 @@ def main():
     t = Ti
     i = 1
     t_int = 0
+
+    # here, the loop is run for the time of the simulation.
+    # at each step, the function quad_sim is called
+    # this function update the states of the drones according to the new time 
+
     while round(t,3) < Tf:
 
         quad_sim(t, Ts, quads, wind, i)
