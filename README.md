@@ -6,16 +6,16 @@ otherwise for the simu_python, since i think i have the latest version, it is ma
 
 for ex for un function, the norm is to do it like this:
 
-class quad():
-	"""
-	here you add blabla if you want for the class
-	"""
+	class quad :
+		"""
+		here you add blabla if you want for the class
+		"""
 
-	def function1():
-	""" 
-	here blabla for function1
-	"""
-	return 1
+		def function1():
+		""" 
+		here blabla for function1
+		"""
+		return 1
 
 
 # GDP
