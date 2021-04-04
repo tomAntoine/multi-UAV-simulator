@@ -10,6 +10,7 @@ import numpy as np
 from numpy import pi
 import matplotlib.pyplot as plt
 import utils
+import matplotlib.collections as collections
 
 
 rad2deg = 180.0/pi
@@ -143,7 +144,7 @@ def makeAllFigures(data, pos_obs):
     #plt.savefig('ObstacleAvoidance/Sim5_wp.png', dpi=80)
 
 
-    plt.figure()
+    fig = plt.figure()
     for id_quad in (data):
         # Prepare the legend by agents and ennemies depending on modes
         if data[id_quad]["mode"] == 'track':
@@ -156,15 +157,21 @@ def makeAllFigures(data, pos_obs):
         min_dis_i = min(data[id_quad]["dist2agt"])
         if min_dis_i < min_dist:
             min_dist = min_dis_i
+
     sentence = 'Minimum distance {} m'.format(round(min_dist,3))
     min_dist_obj = plt.plot(time,[min_dist for t in time], '--', color = 'red', label = sentence)
+
     plt.grid(True)
     plt.legend()
     plt.xlabel('Time (s)')
     plt.ylabel('Distance (m)')
     plt.title('Minimum Distance to Other Agents')    
     plt.draw()
-    #plt.savefig('ObstacleAvoidance/Sim5_oa.png', dpi=80)
+
+
+
+
+
 
 
     plt.figure()
@@ -193,17 +200,32 @@ def makeAllFigures(data, pos_obs):
 
     if id_trackers :
 
-        plt.figure()
+        fig = plt.figure()
         for id_quad in (id_trackers):
             # Prepare the legend by agents and ennemies depending on modes
             sentence = 'Quad ID: {}, MODE: {}, TARGET: Quad {}'.format(id_quad,data[id_quad]["mode"],data[id_quad]["id_targ"])
             id_plot = plt.plot(time, data[id_quad]["dist2target"], color = data[id_quad]["color"], label = sentence)
         plt.grid(True)
         sentence = 'Threshold distance: 1 m'
-        threshold = plt.plot(time,[1 for t in time], '--', color = 'red', label = sentence)
+        threshold = plt.plot(time,[0.9 for t in time], '--', color = 'red', label = sentence)
         plt.legend()
         plt.xlabel('Time (s)')
         plt.ylabel('Distance (m)')
         plt.title('Minimum Distance to Target')    
         plt.draw()
-         #plt.savefig('ObstacleAvoidance/Sim5_oa.png', dpi=80)
+
+        time_killed = 10 #data[id_quad]["t_track"]-50*time[1]
+
+
+        sentence = 'Time for neutralization {} s'.format(round(time_killed,3))
+        min_dist_obj = plt.vlines(time_killed,0,8, color = 'red', label = sentence)
+        
+        xrange1 = [(0, time_killed)]
+        xrange2 = [(time_killed, time[-1])]
+        yrange = (0, 10)
+        ax = fig.add_subplot(111)
+        c1 = collections.BrokenBarHCollection(xrange1, yrange, facecolor='pink', alpha=0.2)
+        c2 = collections.BrokenBarHCollection(xrange2, yrange, facecolor='blue', alpha=0.2)
+
+        ax.add_collection(c1)
+        ax.add_collection(c2)

@@ -53,7 +53,7 @@ def main():
     # ---------------------------
     Ti = 0
     Ts = 0.005
-    Tf = 12
+    Tf = 8
     ifsave = 1
 
     # Choose trajectory settings
@@ -151,7 +151,81 @@ def main():
         quads = [quad0, quad1]
         return pos_obs,quads
 
-    pos_obs,quads = tracking_and_kill_scenario()
+    def simple_guided_for_PF():
+        pos_obs = []
+        for i in range(20):
+            pos_obs.append(random.sample(range(-10, 0), 3))
+        pos_obs = np.array(pos_obs)
+        quad0 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='guided', id_targ = -1, color = 'blue',  pos_ini = [0,0,-5],  pos_goal = [-10,-10,-10],  pos_obs = pos_obs)
+        quads = [quad0]
+        return pos_obs,quads
+
+    def ROS_simu():
+        fire_station=[]
+        fire_truck=[]
+        tree_1=[]
+        tree_2=[]
+        pos_obs=[]
+        for i in range(20):
+            x = random.sample(range(-10, 10), 1)[0]
+            y = random.sample(range(-55, -45), 1)[0]
+            z = random.sample(range(-12, 0), 1)[0]
+            fire_station.append([x,y,z])
+        
+        for i in range(5):
+            x = random.sample(range(-19, 21), 1)[0]
+            y = random.sample(range(-55, -45), 1)[0]
+            z = random.sample(range(-3, 0), 1)[0]
+            fire_truck.append([x,y,z])
+
+        for i in range(5):
+            x = random.sample(range(-12, -8), 1)[0]
+            y = random.sample(range(-42,-38), 1)[0]
+            z = random.sample(range(-5, 0), 1)[0]
+            tree_1.append([x,y,z])
+        for i in range(5):
+            x = random.sample(range(8, 12), 1)[0]
+            y = random.sample(range(-42,-38), 1)[0]
+            z = random.sample(range(-5, 0), 1)[0]
+            tree_2.append([x,y,z])
+
+        pos_obs = fire_station + fire_truck + tree_1 + tree_2
+        pos_obs = np.array(pos_obs)
+        quad0 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='guided', id_targ = -1, color = 'blue',  pos_ini = [0,0,0],  pos_goal = [0,-100,-10],  pos_obs = pos_obs)
+        quads = [quad0]
+        return(pos_obs,quads)
+
+    def real_map():
+
+        xs = [-1,0,1]
+        ys = [-1,0,1]
+        zs = [0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10]
+        tower = [[x,y,z] for x in xs for y in ys for z in zs]
+
+        xs = [-20,5,10]
+        ys = [5,-10,10]
+        zs = [0,-1,-2,-3]
+        trees = [[x,y,z] for x in xs for y in ys for z in zs]
+
+        xs = [-20,5,10]
+        ys = [5,-10,10]
+        zs = [-4,-5]
+
+        tops = []
+        for i in range(3):
+            x, y = xs[i], ys[i]
+            for z in zs:
+                tops = tops + [[x-1,y,z],[x+1,y,z],[x,y,z],[x,y-1,z],[x,y+1,z]]
+                print(tops)
+
+        pos_obs = np.array(tower + trees + tops)
+
+        quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue',  pos_ini = [0,0,-5],  pos_goal = [-10,-10,-10],  pos_obs = pos_obs)
+        quads = [quad0]
+        return pos_obs,quads
+
+    
+    pos_obs,quads = multi_tracking_scenario()
 
 
     wind = Wind('None', 2.0, 90, -15)
@@ -206,43 +280,31 @@ def main():
                                         ('tor_all',quad.tor_all),
                                         ('params', quad.params),
                                         ('xyzType', quad.traj.xyzType),
-                                        ('yawType', quad.traj.yawType)])
+                                        ('yawType', quad.traj.yawType),
+                                        ('t_track', quad.t_track)])
 
 
 
-    utils.makeAllFigures(data, pos_obs)
+    #utils.makeAllFigures(data, pos_obs)
     #utils.make3DAnimation(data,pos_obs)
 
 
-    fig = plt.figure(figsize = (10,10))
 
-    ax = p3.Axes3D(fig)
-
-    anis = []
-    '''
-    for quad in quads :
-    ax.plot([quad.pos_ini[0]], [quad.pos_ini[1]], -quad.pos_ini[2], 's', color=quad.color)
-    ax.plot([quad.pos_goal[0]],[quad.pos_goal[1]], -quad.pos_goal[2],'X', color=quad.color)
-    #ani = utils.sameAxisAnimation(quad.t_all, quad.traj.wps, quad.pos_all, quad.quat_all, quad.sDes_traj_all, quad.Ts, quad.params, quad.traj.xyzType, quad.traj.yawType, ifsave, ax, fig, quad.color, quad.mode_ini, quad.quad_id, quad.id_targ)
-    '''
-    ani = utils.sameAxisAnimation(quads[0].t_all, quads[0].Ts, data, ifsave, ax, fig, pos_obs)
-    '''
-    anis.append(ani)
-    if quad.mode_ini == 'track':
-        sentence = 'Quad ID: {}, MODE: {}, TARGET'.format(quad.quad_id,quad.mode_ini,quad.id_targ)
-    elif quad.mode_ini != 'track':
-        sentence = 'Quad ID: {}, MODE: {}'.format(quad.quad_id,quad.mode_ini)
-    ax.legend(sentence)
-    '''
-
-
-
-    '''
     # Plot pf3D potential
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ani = utils.pfPlot(quads[0].t_all,quads[0].pf_map_all,ax,fig,Ts)
-    '''
+    #fig = plt.figure()
+    #ax = fig.add_subplot(111, projection='3d')
+    #ani = utils.pfPlot(quads[0].t_all,quads[0].pf_map_all,ax,fig,Ts)
+
+    # 3d animation
+    fig = plt.figure(figsize = (13,13))
+    ax = p3.Axes3D(fig)
+    ani = utils.sameAxisAnimation(quads[0].t_all, quads[0].Ts, data, ifsave, ax, fig, pos_obs)
+
+
+
+
+    
+    
     plt.show()
 
 if __name__ == "__main__":

@@ -19,6 +19,8 @@ def quad_sim(Ts, quads):
 
     for quad in quads:
         quad.update_states()
+
+    for quad in quads:
         pos_quads.append([quad.quad_id,quad.pos])
 
     for quad in quads:
@@ -39,18 +41,21 @@ def quad_sim(Ts, quads):
 
 def main():
 
-    Ts = 15
+    Ts = 0.005 # final time of simulation
+    Tc = time.time() # clock time of simulation
 
     # ---------------------------
     pos_obs = np.array([[1, 5, -2]])
 
-    pos_goal = [15,15,-15]
-    channel_id = 'udp:127.0.0.1:14551'
-    
-    quad0 = Quadcopter(Tup = 100, Ts = Ts, quad_id = 0, mode='ennemy', id_targ = -1, pos_goal= pos_goal, pos_obs = pos_obs,channel_id=channel_id)
+          
+    quad0 = Quadcopter(Ts = Ts, quad_id = 0, mode='ennemy', id_targ = -1, pos_goal= [30,15,-30], pos_obs = pos_obs, channel_id='udp:127.0.0.1:14551', global_frame=None)
+    # Initialize the frame at the origin by initializing the drone located at the origin
+    #global_frame = quad0.global_frame
+    #quad1 = Quadcopter(Ts = Ts, quad_id = 1, mode='guided', id_targ = -1, pos_goal= [15,10,-15], pos_obs = pos_obs, channel_id='udp:127.0.0.1:14561', global_frame=global_frame)
+    #quad2 = Quadcopter(Ts = Ts, quad_id = 2, mode='track', id_targ = 0, pos_goal= [15,20,-15], pos_obs = pos_obs, channel_id='udp:127.0.0.1:14571', global_frame=global_frame)
     
 
-    quads = [quad0]
+    quads = [quad0]#, quad1, quad2]
 
     for quad in quads:
 
@@ -58,9 +63,10 @@ def main():
 
     while True :
 
+
         quad_sim(Ts, quads)
 
-        time.sleep(Ts)
+        time.sleep(3)
 
 
 

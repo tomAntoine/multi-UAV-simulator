@@ -280,6 +280,8 @@ class Quadcopter:
 
     def update(self, t, Ts, wind, i, quad):
 
+        
+
 
         if (self.t_update > self.Tf) or (t == 0):
             update = True
@@ -320,7 +322,7 @@ class Quadcopter:
                 # otherwise moddif wp but stab issues
                 # ask SA if they can provide us the velocity of the targets, better than discretize estimation
 
-                estimate_pos_targ = 2*pos_targ-1*self.previous_pos_targ
+                estimate_pos_targ = 3*pos_targ-2*self.previous_pos_targ
                 self.pos_goal = np.hstack((estimate_pos_targ) + [0,0,1.5]).astype(float)
 
                 dist = np.sqrt((self.previous_pos_us[0]-self.previous_pos_targ[0])**2+(self.previous_pos_us[1]-self.previous_pos_targ[1])**2+(self.previous_pos_us[2]-self.previous_pos_targ[2])**2)
@@ -331,14 +333,18 @@ class Quadcopter:
                         self.neutralize = True
                         self.mode = "home"
                         self.print_mode("track", "home")
+                        self.t_track = t - Ts
                 else :
                     self.t_track = 0
                 self.previous_pos_targ = pos_targ
                 self.previous_pos_us = self.pos
 
             if self.mode == 'guided':
-                pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
-                temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                try :
+                    pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
+                    temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                except :
+                    temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
                 dist = np.sqrt((self.pos[0]-self.pos_goal[0])**2+(self.pos[1]-self.pos_goal[1])**2+(self.pos[2]-self.pos_goal[2])**2)
                 if dist < 1:
                     self.mode = "home"
@@ -352,6 +358,7 @@ class Quadcopter:
                 if dist < 1:
                     self.mode = "land"
                     self.print_mode("home", "land")
+
 
             if self.mode == 'land':
                 pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]

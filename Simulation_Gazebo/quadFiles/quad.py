@@ -22,7 +22,7 @@ deg2rad = pi/180.0
 
 class Quadcopter:
 
-    def __init__(self, Tup, Ts, quad_id = None, mode = 'ennemy', id_targ = -1, pos_goal= [1,1,-1], pos_obs = None, channel_id = None):
+    def __init__(self, Ts, quad_id = None, mode = 'ennemy', id_targ = -1, pos_goal= [1,1,-1], pos_obs = None, channel_id = None, global_frame = None):
 
         # Quad Params
         # ---------------------------
@@ -43,8 +43,8 @@ class Quadcopter:
 
         self.Ts = Ts
         self.t_track = 0
-        self.Tup = Tup
 
+        self.previous_pos_targ = pos_goal
         #-- Setup the commanded flying speed
         self.gnd_speed = 4 # [m/s]
 
@@ -54,16 +54,18 @@ class Quadcopter:
         #-- Connect to the vehicle
         print('Connecting the drone {0}'.format(self.channel_id))
 
-
-        #channel_id = 'udp:127.0.0.1:14551'
-
         self.vehicle = connect(channel_id)
 
-        self.global_frame = self.vehicle.location.global_relative_frame
+        if not global_frame:
+            self.global_frame = self.vehicle.location.global_relative_frame
+        else: 
+            self.global_frame = global_frame
 
         self.pos_ini = reverse_get_location_metres(self.global_frame, self.vehicle.location.global_relative_frame)
 
         self.vehicle.groundspeed = self.gnd_speed
+
+        self.battery = 1
 
 
 
@@ -93,6 +95,14 @@ class Quadcopter:
 
     def update(self, Ts):
 
+        try :
+            self.battery = self.vehicle.battery.level
+            print("battery level is {0}%".format(self.battery))
+        except :
+            self.battery = self.vehicle.Battery.level
+            print("battery level is {0}%".format(self.battery))
+
+
         self.update_states()
 
         if self.mode == "fall":
@@ -105,85 +115,89 @@ class Quadcopter:
 
 
         if (self.mode != 'ennemy') :
-
-            if self.mode == 'takeoff':
-                arm_and_takeoff(3)
-                self.mode = 'track'
-
-                if self.mode == 'track':
-                    pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.id_targ and x[0] != self.quad_id)]
-                    try :
-                        temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
-                    except :
-                        temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
-                    pos_targ = [x[1] for x in self.pos_quads if x[0] == self.id_targ][0]
-
-                    # mix desired velocity vector with the velocity of the target
-                    # lectures on coop guidance P16 ==> modif for moving target (it will add a gain)
-                    # need to understand the guidance command we are using
-                    # derivative ==> more reactivness
-                    # otherwise moddif wp but stab issues
-                    # ask SA if they can provide us the velocity of the targets, better than discretize estimation
-
-                    estimate_pos_targ = 2*pos_targ-self.previous_pos_targ
-
-
-                    self.pos_goal = np.hstack((estimate_pos_targ) + [0,0,-0.5]).astype(float)
-                    dist = np.sqrt((self.pos[0]-self.pos_goal[0])**2+(self.pos[1]-self.pos_goal[1])**2+(self.pos[2]-self.pos_goal[2])**2)
-                    if dist < 1:
-                        self.t_track += Ts
-                        if self.t_track > 3*Ts:
-                            self.neutralize = True
-                            self.mode = "home"
-                            self.print_mode("track", "home")
-                    else :
-                        self.t_track = 0
-                    self.previous_pos_targ = pos_targ
-
-
-                if self.mode == 'guided':
-                    pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
-                    try :
-                        temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
-                    except :
-                        temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
-
-                    dist = np.sqrt((self.pos[0]-self.pos_goal[0])**2+(self.pos[1]-self.pos_goal[1])**2+(self.pos[2]-self.pos_goal[2])**2)
-                    if dist < 1:
-                        self.mode = "home"
-                        self.print_mode("guided", "home")
-
-                if self.mode == 'home':
-                    ChangeMode(self.vehicle,"RTL")
-
-
-                if self.mode == 'land':
-                    pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
-                    try :
-                        temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
-                    except :
-                        temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
-                    self.pos_goal = np.hstack([self.pos[0], self.pos[1], -0.5]).astype(float)
-
-                if self.mode == 'hover':
-                    try :
-                        temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
-                    except :
-                        temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
+            if self.mode == 'track':
+                pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.id_targ and x[0] != self.quad_id)]
+                try :
                     temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
-                    self.pos_goal = np.hstack(self.pos).astype(float)
+                except :
+                    temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
+                pos_targ = [x[1] for x in self.pos_quads if x[0] == self.id_targ][0]
+
+                # mix desired velocity vector with the velocity of the target
+                # lectures on coop guidance P16 ==> modif for moving target (it will add a gain)
+                # need to understand the guidance command we are using
+                # derivative ==> more reactivness
+                # otherwise moddif wp but stab issues
+                # ask SA if they can provide us the velocity of the targets, better than discretize estimation
+                print(pos_targ)
+                print(self.previous_pos_targ)
+                estimate_pos_targ = [0,0,0]
+                estimate_pos_targ[0] = 2*pos_targ[0]-self.previous_pos_targ[0]
+                estimate_pos_targ[1] = 2*pos_targ[1]-self.previous_pos_targ[1]
+                estimate_pos_targ[2] = 2*pos_targ[2]-self.previous_pos_targ[2]
+
+                self.pos_goal = np.hstack((estimate_pos_targ) + [0,0,-0.5]).astype(float)
+                dist = np.sqrt((self.pos[0]-self.pos_goal[0])**2+(self.pos[1]-self.pos_goal[1])**2+(self.pos[2]-self.pos_goal[2])**2)
+                print('distance = {0}'.format(dist))
+                if dist < 10:
+                    self.t_track += Ts
+                    if self.t_track > 3*Ts:
+                        print(self.t_track)
+                        self.neutralize = True
+                        self.mode = "home"
+                        self.print_mode("track", "home")
+                else :
+                    self.t_track = 0
+                self.previous_pos_targ = pos_targ
 
 
-        self.wps, data = pf3d(self.pos, self.pos_goal, self.pos_obs)
-        self.data = data
-        self.updateWaypoints2ROS()
+            if self.mode == 'guided':
+                pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
+                try :
+                    temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                except :
+                    temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
+
+                dist = np.sqrt((self.pos[0]-self.pos_goal[0])**2+(self.pos[1]-self.pos_goal[1])**2+(self.pos[2]-self.pos_goal[2])**2)
+                if dist < 1:
+                    self.mode = "home"
+                    self.print_mode("guided", "home")
+
+            if self.mode == 'home':
+                ChangeMode(self.vehicle,"RTL")
+
+
+            if self.mode == 'land':
+                pos_dyn_obs = [x[1] for x in self.pos_quads if  (x[0] != self.quad_id)]
+                try :
+                    temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                except :
+                    temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
+                self.pos_goal = np.hstack([self.pos[0], self.pos[1], -0.5]).astype(float)
+
+            if self.mode == 'hover':
+                try :
+                    temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                except :
+                    temp_pos_obs = np.vstack((self.pos_obs)).astype(float)
+                temp_pos_obs = np.vstack((self.pos_obs, pos_dyn_obs)).astype(float)
+                self.pos_goal = np.hstack(self.pos).astype(float)
+
+
+            #self.wps, data = pf3d(self.pos, self.pos_goal, self.pos_obs)
+            #self.data = data
+            self.wps = [self.pos_goal]
+            adds_new_mission(self.vehicle, self.vehicle.location.global_frame, self.wps, spline = False)
+
+        
 
     def update_states(self):
 
         self.pos = reverse_get_location_metres(self.global_frame, self.vehicle.location.global_relative_frame)
         
         self.speed = self.vehicle.velocity
-
+        print('_'*30)
+        print(self.quad_id)
         print(self.pos)
         print(self.speed)
 
@@ -191,7 +205,10 @@ class Quadcopter:
     def init(self):
 
         arm_and_takeoff(self.vehicle,3)
+        self.wps = [self.pos_goal]
+        adds_new_mission(self.vehicle, self.vehicle.location.global_frame, self.wps, spline = False)
         self.update_states()
-        self.wps = [self.pos]
-        adds_new_mission(vehicle,self.global_frame,self.wps)
         ChangeMode(self.vehicle,"AUTO")
+        #print (self.vehicle.parameters['ANGLE_MAX'])
+        self.vehicle.parameters['ANGLE_MAX']= 8000
+
