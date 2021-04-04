@@ -25,8 +25,8 @@ i think it is better and looks better than defining them in the main function, i
 # GDP
 
 This folder is composed of two independant but similar repositeries: 
-- Simulation_Python
-- Simulation_Gazebo
+- Simulation_Python : it is used to do numerical simulations fully on python
+- Simulation_Gazebo : here, the python code for guidance is used as SITL, for a Gazebo/ROS world
 
 # Simulation_python 
 
