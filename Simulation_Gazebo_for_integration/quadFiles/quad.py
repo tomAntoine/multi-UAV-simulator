@@ -159,18 +159,18 @@ class Quadcopter:
                 ChangeMode(self.vehicle,"RTL")
                 # be able to nkow when RTL is done 
                 if not vehicle.armed :
-                    publish("back home")
+                    print("back home")
 
             if self.mode == 'takeoff':
                 arm_and_takeoff(self.vehicle,3)
-                publish("takeoff finished")
+                print("takeoff finished")
                    
 
             if self.mode == "charging":
 
                 self.vehicle.battery.level += 10
                 if self.vehicle.battery.level == 100:
-                    publish('charged')
+                    print('charged')
 
 
             if self.mode == 'land':
