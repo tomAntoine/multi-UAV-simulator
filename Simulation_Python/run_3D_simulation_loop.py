@@ -8,6 +8,8 @@ Please feel free to use and modify this, but keep the above information. Thanks!
 adaptation
 author: Tom Antoine and Alex Martinez
 """
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -231,12 +233,10 @@ if __name__ == "__main__":
     goaldist = []
     min_dist_other = []
 
-    for i in range(20):
+    for i in range(100):
         print(i)
         min_dist_other_i = main()
         min_dist_other.append(min_dist_other_i)
-
-    min_dist_other = min_dist_other + min_dist_other + min_dist_other + min_dist_other + min_dist_other
 
     #plot_hist(min_dist_obs,'Minimum distance to obstacle')
     #plot_hist(time_tot,'Computational Time')
