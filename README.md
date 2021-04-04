@@ -12,10 +12,14 @@ for ex for un function, the norm is to do it like this:
 		"""
 
 		def function1():
-		""" 
-		here blabla for function1
-		"""
-		return 1
+			""" 
+			here blabla for function1
+			"""
+			return 1
+
+BTW, i added a new file called scenarios where there are all defined,
+i think it is better and looks better than defining them in the main function, it didn't made any sens. 
+
 
 
 # GDP
@@ -27,4 +31,5 @@ This folder is composed of two independant but similar repositeries:
 # Simulation_python 
 
 The file named run_3D_simulation_loop was created in order to test simulations many times with randomized parameters, in order to do statistical V&V. It is very similar to the run_3D_simulation, but doesnt plot results for each simulation, only histograms plotting relevant data from the many simulations done. 
+
 
