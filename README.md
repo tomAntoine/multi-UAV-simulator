@@ -1,18 +1,12 @@
-###### GNC subsystem - Group 1 - GDP AVDC 2020-2021 ###### 
-Team members:
-Alejandra Martínez Fariña
-Tom Antoine
-Charalampos Efstratiou 
+# multi-UAV-simulator
+GNC of a SWARM of UAVs in a SITL by Tom Antoine and Alex Martinez - Cranfield University AVDC MSc 2021
 
-This folder is composed of two independant but similar repositories: 
+This project is composed of two independant but similar repositories: 
 - Simulation_Python : it is used to do numerical simulations on the guidance algorithm fully on Python
-- Simulation_Gazebo : here, the python code for guidance is used as SITL, for a Gazebo/ROS/Ardupilot world
+- Simulation_Gazebo : here, the python code for guidance is used as SITL, for a Gazebo/ROS/Ardupilot world (https://github.com/alexMarFar/multi-UAV-simulator.git)
 
-This folder also contains the final report. In the Implementation section of GNC subsystem, everything is 
-further detailed.
+# Simulation_Gazebo
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Simulation_Python #
 Prerequisites:
