@@ -64,11 +64,14 @@ Creates the plots for the analysis
 
 ## How to launch the simulation
 
-1. Open Terminal 1
+Open Terminal 1
               
        cd Simulation_Python/
+       
+1. to run one simulation
+
        python run_3D_simulation.py
 
-2. or
+2. to run multiple simulations for statistical results
 
         python run_3D_simulation_loop.py
