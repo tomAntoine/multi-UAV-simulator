@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 """
+Adapted by:
+Tom Antoine and Alejandra Martínez
+part of GNC subteam, group 1, GDP AVDC 2020-2021
+email:
+tom.antoine@cranfield.ac.uk
+alejandra.martinez-farina@cranfield.ac.uk
+
+Based on a code by:
 author: John Bass
 email: john.bobzwik@gmail.com
+github: https://github.com/bobzwik/Quadcopter_SimCon
 license: MIT
+
+
 Please feel free to use and modify this, but keep the above information. Thanks!
 """
 

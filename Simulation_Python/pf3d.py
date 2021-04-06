@@ -1,3 +1,21 @@
+"""
+Adapted by:
+Tom Antoine and Alejandra Martínez
+part of GNC subteam, group 1, GDP AVDC 2020-2021
+email:
+tom.antoine@cranfield.ac.uk
+alejandra.martinez-farina@cranfield.ac.uk
+
+Based on:
+Potential Field based path planner 2D
+author: Atsushi Sakai (@Atsushi_twi)
+Ref:
+https://www.cs.cmu.edu/~motionplanning/lecture/Chap4-Potential-Field_howie.pdf
+
+
+Please feel free to use and modify this, but keep the above information. Thanks!
+"""
+
 
 from collections import deque
 import numpy as np

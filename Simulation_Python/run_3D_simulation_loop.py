@@ -1,13 +1,23 @@
 # -*- coding: utf-8 -*-
 """
+Adapted by:
+Tom Antoine and Alejandra Martínez
+part of GNC subteam, group 1, GDP AVDC 2020-2021
+email:
+tom.antoine@cranfield.ac.uk
+alejandra.martinez-farina@cranfield.ac.uk
+
+Based on a code by:
 author: John Bass
 email: john.bobzwik@gmail.com
+github: https://github.com/bobzwik/Quadcopter_SimCon
 license: MIT
-Please feel free to use and modify this, but keep the above information. Thanks!
 
-adaptation
-author: Tom Antoine and Alex Martinez
+
+Please feel free to use and modify this, but keep the above information. Thanks!
 """
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -21,6 +31,7 @@ import config
 import mpl_toolkits.mplot3d.axes3d as p3
 from matplotlib.legend import Legend
 import random
+from scenarios import *
 
 def quad_sim(t, Ts, quads, wind, i):
 
@@ -81,77 +92,6 @@ numTimeStep = int(Tf/Ts+1)
 
 # ---------------------------
 
-
-def full_scenario():
-    pos_obs = np.array([[1, 5, -2], [8, 2, -8], [5, 8, -9], [0, 0, -2], [3, 3, -1],[3, 9, -17],[5, 7, -18],[0, 0, -10],[5, 10, -16],[10,10,-12],[13,13,-13]])
-    quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = [0,0,0], pos_goal= [15,15,-15], pos_obs = pos_obs)
-    quad1 = Quadcopter(Ti, Ts*90, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='guided', id_targ = -1, color = 'green', pos_ini = [0,3,0], pos_goal = [15,10,-15], pos_obs = pos_obs)
-    quad2 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2,  mode='track', id_targ = 0, color = 'pink', pos_ini = [3,0,0], pos_goal = [15,20,-15], pos_obs = pos_obs)
-    quads = [quad0, quad1, quad2]
-    return pos_obs,quads
-
-def multi_waypoint_scenario():
-    pos_obs = np.array([[50,0,0]])
-    quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = [0,0,0], pos_goal= [0,-17,-10], pos_obs = pos_obs)
-    quad1 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='ennemy', id_targ = -1, color = 'green', pos_ini = [20,0,0], pos_goal = [-20,-15,-10], pos_obs = pos_obs)
-    quad2 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2, mode='ennemy', id_targ = -1, color = 'red', pos_ini = [-20,-10,0], pos_goal = [-10,0,-20], pos_obs = pos_obs)
-    quads = [quad0, quad1, quad2]
-    return pos_obs,quads
-
-def static_OA_scenario():
-    pos_obs = []
-    for i in range(30):
-        pos_obs.append(random.sample(range(-10, 0), 3))
-    pos_obs = np.array(pos_obs)
-    quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue', pos_ini = [0,0,0], pos_goal= [-10,-10,-10], pos_obs = pos_obs)
-    quads = [quad0]
-    return pos_obs,quads
-
-def dynamic_CA_scenario():
-    #Tf =8s
-    pos_obs = np.array([[50,0,0]])
-    quad0 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='guided', id_targ = -1, color = 'blue',  pos_ini = [0,10,-5],pos_goal = [30,10,-5], pos_obs = pos_obs)
-    x, z = random.randint(3,17),-1*random.randint(1,8)
-    quad1 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='ennemy', id_targ = -1, color = 'green', pos_ini = [x,0,z], pos_goal = [x,20,z], pos_obs = pos_obs)
-    x, z = random.randint(3,17),-1*random.randint(1,8)
-    quad2 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2, mode='ennemy', id_targ = -1, color = 'green', pos_ini = [x,0,z], pos_goal = [x,20,z], pos_obs = pos_obs)
-    x, z = random.randint(3,17),-1*random.randint(1,8)
-    quad3 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3, mode='ennemy', id_targ = -1, color = 'green', pos_ini = [x,0,z], pos_goal = [x,20,z], pos_obs = pos_obs)
-    quads = [quad0, quad1,quad2,quad3]
-    return pos_obs,quads
-
-def simple_tracking_scenario():
-    pos_obs = np.array([[-10,-10,0]])
-    quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue',  pos_ini = [0,0,0],  pos_goal = [15,15,-15],  pos_obs = pos_obs)
-    quad1 = Quadcopter(Ti, Ts*90, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 0, color = 'green', pos_ini = [5,5,0], pos_goal = [2,2,-10],  pos_obs = pos_obs)
-    quads = [quad0, quad1]
-    return pos_obs,quads
-
-def multi_tracking_scenario():
-    pos_obs = np.array([[-10,-10,0]])
-    quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue',  pos_ini = [0,0,0],  pos_goal = [15,15,-15],  pos_obs = pos_obs)
-    quad1 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 0, color = 'green', pos_ini = [4,0,0], pos_goal = [4,4,-10],  pos_obs = pos_obs)
-    quad2 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2, mode='track', id_targ = 0, color = 'green', pos_ini = [4,4,0], pos_goal = [4,4,-10],  pos_obs = pos_obs)
-    quad3 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3, mode='track', id_targ = 0, color = 'green', pos_ini = [4,-4,0], pos_goal = [4,4,-10],  pos_obs = pos_obs)
-    quads = [quad0, quad1, quad2, quad3]
-    return pos_obs,quads
-
-def tracking_loop_scenario(x):
-    pos_obs = np.array([[x/2,x/2,-10]])
-    quad0 = Quadcopter(Ti, Ts*99, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='track', id_targ = 1, color = 'blue',  pos_ini = [0,0,-10],  pos_goal = [0,x,-10],  pos_obs = pos_obs)
-    quad1 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 2, color = 'green', pos_ini = [x,0,-10], pos_goal = [0,0,-10],  pos_obs = pos_obs)
-    quad2 = Quadcopter(Ti, Ts*101, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 2, mode='track', id_targ = 3, color = 'orange', pos_ini = [x,x,-10],pos_goal = [x,0,-10], pos_obs = pos_obs)
-    quad3 = Quadcopter(Ti, Ts*102, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 3, mode='track', id_targ = 0, color = 'pink', pos_ini = [0,x,-10], pos_goal = [x,x,-10],pos_obs = pos_obs)
-    quads = [quad0, quad1,quad2,quad3]
-    return pos_obs,quads
-
-def tracking_and_kill_scenario():
-    pos_obs = np.array([[-10,-10,0]])
-    quad0 = Quadcopter(Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 0, mode='ennemy', id_targ = -1, color = 'blue',  pos_ini = [0,0,-5],  pos_goal = [20,15,-20],  pos_obs = pos_obs)
-    quad1 = Quadcopter(Ti, Ts*100, ctrlType, trajSelect, numTimeStep, Ts, quad_id = 1, mode='track', id_targ = 0, color = 'green', pos_ini = [5,0,0], pos_goal = [4,4,-10],  pos_obs = pos_obs)
-    quads = [quad0, quad1]
-    return pos_obs,quads
-
 def dist(a,b):
     return np.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2)
 
@@ -186,7 +126,7 @@ def getgoaldist(pos_all,pos_goal):
 def main():
 
     start_time = time.time()
-    pos_obs,quads = dynamic_CA_scenario()
+    pos_obs,quads = dynamic_CA_scenario_random_pos()
 
     wind = Wind('None', 2.0, 90, -15)
 
@@ -231,12 +171,10 @@ if __name__ == "__main__":
     goaldist = []
     min_dist_other = []
 
-    for i in range(20):
+    for i in range(100):
         print(i)
         min_dist_other_i = main()
         min_dist_other.append(min_dist_other_i)
-
-    min_dist_other = min_dist_other + min_dist_other + min_dist_other + min_dist_other + min_dist_other
 
     #plot_hist(min_dist_obs,'Minimum distance to obstacle')
     #plot_hist(time_tot,'Computational Time')

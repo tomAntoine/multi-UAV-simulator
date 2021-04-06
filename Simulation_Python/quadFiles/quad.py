@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
 """
+Adapted by:
+Tom Antoine and Alejandra Martínez
+part of GNC subteam, group 1, GDP AVDC 2020-2021
+email:
+tom.antoine@cranfield.ac.uk
+alejandra.martinez-farina@cranfield.ac.uk
+
+Based on a code by:
 author: John Bass
 email: john.bobzwik@gmail.com
+github: https://github.com/bobzwik/Quadcopter_SimCon
 license: MIT
+
+
 Please feel free to use and modify this, but keep the above information. Thanks!
 """
 
@@ -22,9 +33,32 @@ deg2rad = pi/180.0
 
 
 class Quadcopter:
+    
+    '''
+    In order to implement the drones, both agents and enemies, the Quad class was created. 
+    This is a file that is used to firstly initialize the drones as independent objects and 
+    to assign and update their attributes. 
+
+    This method of implementation allowed a very easy and intuitive use of the code, as well
+    as an unlimited scalability of the SWARM.  
+
+    For the initialization to happen several inputs need to be provided. The main ones are the 
+    drone identification number “quad_id”, the keyword “mode”, the target identification number 
+    “id_targ”, the goal position “pos_goal” and the position of static obstacles “pos_obs”. 
+
+    '''
 
     def __init__(self, Ti, Tf, ctrlType, trajSelect, numTimeStep, Ts, quad_id = None, mode = 'ennemy', id_targ = -1, color='blue', pos_ini = [0,0,0], pos_goal= [1,1,-1], pos_obs = None):
+        '''
+        It is used to store in the basic attributes the inputs already mentioned in the previous
+        sections. 
+        
+        In the case of the one employed by Python simulation environment, the command for an initial
+        stable hover and the initial state of the drone are initialized. For that, the dynamics, 
+        kinetics, kinematics and control are also loaded. Finally, the storage of drone data is 
+        pre-allocated.
 
+        '''
         # Quad Params
         # ---------------------------
 
@@ -110,6 +144,10 @@ class Quadcopter:
         self.pf_map_all = np.empty(numTimeStep,dtype=list)
 
     def extended_state(self):
+        '''
+        Only for the python environment. It computes the rotation matrix of the current state 
+        and its Euler angles too.
+        '''
 
         # Rotation Matrix of current state (Direct Cosine Matrix)
         self.dcm = utils.quat2Dcm(self.quat)
@@ -123,12 +161,23 @@ class Quadcopter:
 
 
     def forces(self):
+        '''
+        Only for the python environment. It computes the rotor thrusts and torques.
+        '''
 
         # Rotor thrusts and torques
         self.thr = self.params["kTh"]*self.wMotor*self.wMotor
         self.tor = self.params["kTo"]*self.wMotor*self.wMotor
 
     def state_dot(self, t, state, cmd, wind):
+        '''
+        Only for the python environment. It calls the dynamic parameters of each drones in
+        terms of mass, inertia and damping. It also calls the aerodynamic and propulsion 
+        coefficients such as drag, thrust or torque. It imports the state vector of each drone,
+        in terms of position, orientation, velocity or angular rate. After that, it studies the 
+        motor dynamics and rotor forces. The wind model is also called here. Finally, it solves 
+        the state derivatives.
+        '''
 
         # Import Params
         # ---------------------------
@@ -276,12 +325,63 @@ class Quadcopter:
         return sdot
 
     def print_mode(self, mode_prev, mode_new):
+        '''
+        Only for the python environment. It updates the mode of the drone by printing the 
+        identification number of the drone, its previous mode and its current one.
+        '''
+
         print("Drone {0} switch from {1} to {2}.".format(self.quad_id, mode_prev, mode_new))
 
     def update(self, t, Ts, wind, i, quad):
+        '''
+        It is used to update the attributes of each drone. First of all, the Boolean must 
+        be changed into true for specific modes and to false for others following their nature. 
 
+        If the initial mode is “enemy”, no update is required as neither collision avoidance
+        or tracking features are activated. However, in the python environment, if the target 
+        becomes neutralized and its mode is changed into “fall”, the goal position will be 
+        updated once as its initial goal position with null height to simulate its crash. This 
+        is done by the MAVlink command “stabilize” in the more complex environment.
+
+        If the initial mode is not “enemy” and the Boolean is true, then update occurs. In the 
+        case of an agent in “guided” mode, it will update the position of other drones as dynamic 
+        obstacles to enhance collision avoidance. For that, it will compare the identification 
+        number of each drone and verify it does not match its own. Then, the temporal position of 
+        obstacles will be jointly stored containing the static and dynamic ones. After that, the 
+        guidance algorithm will be called and the trajectory updated. For an automated transition 
+        of modes, a distance threshold can be employed to consider the goal position reached. For 
+        that, the norm of the difference between the current position and the goal one is computed 
+        and compared with said threshold. If it is smaller, the mode can be switched to “home”.
+
+        In the case of an agent in “track” mode, it will update both the position of other drones 
+        for collision avoidance and its goal position. For that, the collision avoidance happens 
+        similarly to “guided” mode although in this case, it will discard the identification numbers 
+        that match both its own and the target it is tasked to follow. As for the tracking aspect, 
+        the target position is assumed to be provided by the Situation Awareness team. However, in 
+        the initial stages it is extracted from the environment. For a basic tracking, the goal 
+        position is assumed to be the target position with an additional half meter in z axis, in 
+        order for the agent to hover over it. Nonetheless, this means that the agent will never be 
+        able to hover exactly over the target. For an improved tracking performance, the future 
+        position of the target is estimated using a constant velocity assumption. This discretized 
+        velocity is computed based on its current and past positions. This estimation can be further 
+        improved by including the continuous velocity, acceleration or by tuning its parameters. 
+        This estimation, after adding the hovering distance is employed for the path planning. In 
+        order to check whether or not a target has been neutralized two thresholds are needed, one 
+        associated with time and another one with the distance between the tracking agent and its 
+        target. In this project, the thresholds are set to 1m for 1.5s (three times the update time).
+        If both are met, the Boolean neutralize becomes true. This one will later be used to change 
+        the target mode from “enemy” to “neutralized”. Once again, a normal automated transition for 
+        the agent would be “home” mode. 
         
+        In the case of the remaining modes associated with actions, the longer ones can also include 
+        collision avoidance as a feature and therefore require updating. This is the case of “home”, 
+        “land” or “hover”, but not the case of “charging” or “takeoff”. Nonetheless, in the more 
+        complex environment, most of these are predefined and can be directly sent as MAVlink commands.
+        
+        After the mode and goal position are updated, the trajectories are overwritten. For that, 
+        the current states are updated and the commands recomputed.
 
+        '''      
 
         if (self.t_update > self.Tf) or (t == 0):
             update = True
@@ -420,6 +520,10 @@ class Quadcopter:
         self.t_update += Ts
 
     def init(self,Ts,quad):
+        '''
+        It is employed to input the first value of the attributes after initialization 
+        in the python environment. 
+        '''
 
         # Trajectory for First Desired States
         # ---------------------------
