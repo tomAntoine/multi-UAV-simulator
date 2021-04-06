@@ -1,4 +1,4 @@
-# multi-UAV-simulator
+# Multi-UAV-simulator
 GNC of a SWARM of UAVs in a SITL by Tom Antoine and Alex Martinez - Cranfield University AVDC MSc 2021
 
 This project is composed of two independant but similar repositories: 
@@ -64,10 +64,11 @@ Creates the plots for the analysis
 
 ## How to launch the simulation
 
-Open Terminal 1
-cd Simulation_Python/
-python run_3D_simulation.py
+1. Open Terminal 1
+              
+       cd Simulation_Python/
+       python run_3D_simulation.py
 
-or
+2. or
 
-python run_3D_simulation_loop.py
+        python run_3D_simulation_loop.py
