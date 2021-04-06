@@ -66,7 +66,7 @@ Creates the plots for the analysis
 
 Open Terminal 1
               
-       cd Simulation_Python/
+    cd Simulation_Python/
        
 1. to run one simulation
 
@@ -74,4 +74,4 @@ Open Terminal 1
 
 2. to run multiple simulations for statistical results
 
-        python run_3D_simulation_loop.py
+       python run_3D_simulation_loop.py
