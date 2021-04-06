@@ -11,7 +11,7 @@ This project is composed of two independant but similar repositories:
 Python 3.8.5 was employed, so full compability with that or after version
 Basic Python libraries such as matplotlib, math, etc
 
-## MAIN FILES
+## Main Files
 
 ### run_3D_simulation.py
 It is the main script from where the simulation is launched. 
@@ -62,7 +62,7 @@ Creates the 3D animation
 #### display.py
 Creates the plots for the analysis
 
-## HOW TO LAUNCH THE SIMULATION
+## How to launch the simulation
 
 Open Terminal 1
 cd Simulation_Python/
