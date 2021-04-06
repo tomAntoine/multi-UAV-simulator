@@ -1,20 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Adapted by:
-Tom Antoine and Alejandra Martínez
-part of GNC subteam, group 1, GDP AVDC 2020-2021
-email:
-tom.antoine@cranfield.ac.uk
-alejandra.martinez-farina@cranfield.ac.uk
-
-Based on a code by:
 author: John Bass
 email: john.bobzwik@gmail.com
-github: https://github.com/bobzwik/Quadcopter_SimCon
 license: MIT
-
-
 Please feel free to use and modify this, but keep the above information. Thanks!
+
+adaptation
+author: Tom Antoine and Alex Martinez
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -137,7 +129,7 @@ def main():
                                         ('xyzType', quad.traj.xyzType),
                                         ('yawType', quad.traj.yawType),
                                         ('t_track', quad.t_track)])
-    # Plot analysis
+
     #utils.makeAllFigures(data, pos_obs)
     #utils.make3DAnimation(data,pos_obs)
 
