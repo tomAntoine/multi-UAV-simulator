@@ -20,7 +20,6 @@ from numpy.linalg import norm
 from waypoints import makeWaypoints
 import config
 from pf3d import pf3d
-from pf2d import pf2d
 
 class Trajectory:
 
